@@ -770,25 +770,40 @@ section {
 
   // ==================== BGM - Web Audio API 浪漫钢琴旋律 ====================
   let audioCtx = null;
-  let musicOn = true;
+  let musicOn = false;
   let noteTimer = null;
   let melodyStarted = false;
 
-  function playTone(ctx, freq, t, dur, vol=0.055) {
-    if (ctx.state !== 'running') return;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = 'sine';
-    osc.frequency.value = freq;
-    gain.gain.setValueAtTime(0, t);
-    gain.gain.linearRampToValueAtTime(vol, t+0.08);
-    gain.gain.exponentialRampToValueAtTime(0.0008, t+dur);
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.start(t); osc.stop(t+dur);
+  function playTone(freq, t, dur, vol) {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    try {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(vol, t + 0.06);
+      gain.gain.exponentialRampToValueAtTime(0.0005, t + dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + dur);
+    } catch(e) {}
   }
 
-  // 卡农风格和弦进行 + 简单旋律
+  // 用振荡器模拟钢琴音色（基频 + 少量泛音）
+  function playPiano(freq, t, dur, vol) {
+    if (!audioCtx || audioCtx.state !== 'running') return;
+    try {
+      // 基频
+      playTone(freq, t, dur, vol);
+      // 泛音让声音更接近钢琴
+      playTone(freq * 2, t, dur, vol * 0.3);
+      playTone(freq * 3, t, dur, vol * 0.1);
+    } catch(e) {}
+  }
+
+  // 卡农风格旋律
   const melodyNotes = [
     523,659,784, 523,659,784, 587,698,784, 587,698,784,
     659,784,880, 659,784,880, 523,659,784, 523,659,784,
@@ -800,66 +815,96 @@ section {
     294,294, 262,262, 330,330, 294,262,
   ];
 
-  let ni=0, bi=0;
-  function startMelody() {
-    if (melodyStarted) return;
-    // 必须在用户手势内创建 AudioContext，移动端才能正常运行
-    if (!audioCtx) {
-      audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+  let ni = 0, bi = 0;
+
+  function startMelodyLoop() {
+    if (noteTimer) clearInterval(noteTimer);
+    const bpm = 66;
+    const beat = 60 / bpm;
+    // 立即播放第一个音，不用等 interval
+    function playNext() {
+      if (!musicOn || !audioCtx || audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+      playPiano(melodyNotes[ni % melodyNotes.length], t, beat * 1.6, 0.09);
+      playPiano(bassNotes[bi % bassNotes.length] * 0.5, t, beat * 2.2, 0.04);
+      if (ni % 4 === 0) {
+        playPiano(melodyNotes[ni % melodyNotes.length] * 2, t + 0.04, beat * 0.7, 0.03);
+      }
+      ni++; bi++;
+      if (ni % melodyNotes.length === 0) { ni = 0; bi = 0; }
     }
-    // 确保 AudioContext 已激活
-    if (audioCtx.state === 'suspended') {
-      audioCtx.resume().then(() => {
-        if (!melodyStarted) beginPlaying();
-      });
-    } else {
-      beginPlaying();
-    }
+    playNext(); // 立刻弹第一个音
+    noteTimer = setInterval(playNext, beat * 1000);
   }
 
-  function beginPlaying() {
+  async function startMelody() {
+    if (melodyStarted) return;
+
+    // 在用户手势内创建并激活 AudioContext
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {
+      return; // 浏览器不支持
+    }
+
+    // 必须在用户手势内 await resume()
+    if (audioCtx.state === 'suspended') {
+      try {
+        await audioCtx.resume();
+      } catch(e) {}
+    }
+
+    // 播放一个短促的启动提示音确认音频已激活
+    if (audioCtx.state === 'running') {
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = 880;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t); osc.stop(t + 0.5);
+    }
+
     melodyStarted = true;
     musicOn = true;
     musicBtn.classList.add('on');
     musicBtn.textContent = '🎵';
-    // 隐藏提示
+
     const hint = document.getElementById('audioHint');
     if (hint) hint.style.display = 'none';
 
-    const bpm = 66;
-    const beat = 60 / bpm;
-    if (noteTimer) clearInterval(noteTimer);
-    noteTimer = setInterval(() => {
-      if (!musicOn || !audioCtx || audioCtx.state !== 'running') return;
-      const t = audioCtx.currentTime;
-      playTone(audioCtx, melodyNotes[ni % melodyNotes.length], t, beat*1.6, 0.048);
-      playTone(audioCtx, bassNotes[bi % bassNotes.length]*0.5, t, beat*2.2, 0.022);
-      if (ni % 4 === 0) {
-        playTone(audioCtx, melodyNotes[ni % melodyNotes.length]*2, t+0.05, beat*0.8, 0.02);
-      }
-      ni++; bi++;
-      if (ni % melodyNotes.length === 0) { ni=0; bi=0; }
-    }, beat * 1000);
+    startMelodyLoop();
   }
 
-  // 页面首次点击时启动音乐（解决移动端自动播放限制）
-  document.addEventListener('click', function initAudio(e) {
+  // 统一的首次交互启动入口
+  function handleFirstInteraction(e) {
     if (!melodyStarted) startMelody();
-  }, { once: false }); // 不用 once，防止首次点击被其他元素拦截
+  }
+
+  document.addEventListener('click', handleFirstInteraction);
+  document.addEventListener('touchstart', handleFirstInteraction, { passive: true });
 
   // 音乐按钮
   const musicBtn = document.getElementById('musicBtn');
-  musicBtn.addEventListener('click', e => {
+  musicBtn.addEventListener('click', async e => {
     e.stopPropagation();
     if (!melodyStarted) {
-      startMelody();
+      await startMelody();
       return;
     }
     musicOn = !musicOn;
     if (musicOn) {
       musicBtn.classList.add('on');
       musicBtn.textContent = '🎵';
-      if (audioCtx?.state === 'suspended') audioCtx.resume();
+      if (audioCtx?.state === 'suspended') {
+        try { await audioCtx.resume(); } catch(e) {}
+      }
+      // 恢复时立即弹一个音
+      if (audioCtx?.state === 'running') startMelodyLoop();
     } else {
       musicBtn.classList.remove('on');
       musicBtn.textContent = '🔇';
