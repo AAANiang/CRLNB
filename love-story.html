@@ -1,0 +1,831 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>小陈 ❤ 小吴 — 我们的爱情故事</title>
+<style>
+/* ============================================================
+   浪漫爱情故事 — 全局样式
+   ============================================================ */
+:root {
+  --rose-50: #fff1f5;
+  --rose-100: #ffe4ec;
+  --rose-200: #fecdd9;
+  --rose-300: #fda4ba;
+  --rose-400: #fb7198;
+  --rose-500: #f43f6e;
+  --rose-600: #e11d4a;
+  --rose-700: #be1238;
+  --rose-800: #9f1235;
+  --rose-900: #881230;
+  --gold-200: #fde6c0;
+  --gold-300: #fcd38a;
+  --gold-400: #fbb042;
+  --gold-500: #e8942c;
+  --cream: #fefaf6;
+  --text: #3d2630;
+  --text-light: #6b5560;
+  --glass-bg: rgba(255, 255, 255, 0.18);
+  --glass-border: rgba(255, 255, 255, 0.35);
+  --shadow-sm: 0 4px 20px rgba(190, 18, 56, 0.10);
+  --shadow-md: 0 12px 40px rgba(190, 18, 56, 0.15);
+  --shadow-lg: 0 24px 64px rgba(190, 18, 56, 0.22);
+  --radius: 22px;
+  --transition: 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body {
+  font-family: 'Georgia','Noto Serif SC','STSong','Songti SC','SimSun',serif;
+  background:#1a0710;
+  color:var(--text);
+  overflow-x:hidden;
+  cursor:default;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ---- Canvas 粒子背景 ---- */
+#bgCanvas {
+  position:fixed; top:0; left:0; width:100%; height:100%;
+  z-index:0; pointer-events:none;
+}
+
+
+/* ---- 音乐按钮 ---- */
+.music-toggle {
+  position:fixed; top:24px; right:24px; z-index:1001;
+  width:46px; height:46px; border-radius:50%;
+  border:1.5px solid rgba(255,255,255,0.45);
+  background:var(--glass-bg); backdrop-filter:blur(12px);
+  cursor:pointer; font-size:20px; color:white;
+  display:flex; align-items:center; justify-content:center;
+  transition:all var(--transition);
+}
+.music-toggle:hover { border-color:white; transform:scale(1.1); box-shadow:0 0 28px rgba(255,140,170,0.5); }
+.music-toggle.on { animation:glowPulse 2s ease-in-out infinite; }
+@keyframes glowPulse {
+  0%,100% { box-shadow:0 0 18px rgba(255,140,170,0.35); }
+  50% { box-shadow:0 0 38px rgba(255,140,170,0.75); }
+}
+
+/* ---- 通用章节容器 ---- */
+section {
+  min-height:100vh; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  padding:80px 24px; position:relative; z-index:1;
+  scroll-snap-align:start;
+}
+
+.section-inner { max-width:800px; width:100%; }
+
+/* ---- 章节标题 ---- */
+.chapter-num {
+  font-size:13px; letter-spacing:5px; color:var(--rose-400);
+  text-transform:uppercase; text-align:center; margin-bottom:10px;
+}
+.section-title {
+  font-size:clamp(30px,5vw,46px); color:white; text-align:center;
+  letter-spacing:2px; margin-bottom:12px; font-weight:700;
+}
+.title-ornament {
+  width:50px; height:2px;
+  background:linear-gradient(90deg,transparent,var(--rose-400),var(--gold-400),var(--rose-400),transparent);
+  margin:0 auto 40px;
+}
+
+/* ---- 毛玻璃卡片 ---- */
+.glass {
+  background:var(--glass-bg); backdrop-filter:blur(18px); -webkit-backdrop-filter:blur(18px);
+  border:1px solid var(--glass-border); border-radius:var(--radius);
+  padding:44px 40px; box-shadow:var(--shadow-sm);
+  transition:all var(--transition); position:relative; overflow:hidden;
+}
+.glass::after {
+  content:''; position:absolute; top:0; left:-100%; width:100%; height:100%;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,0.06),transparent);
+  transition:left 0.7s ease;
+}
+.glass:hover::after { left:100%; }
+.glass:hover { box-shadow:var(--shadow-md); transform:translateY(-3px); }
+.glass p {
+  font-size:clamp(15px,2vw,17px); line-height:2.1; color:rgba(255,255,255,0.9);
+  text-align:justify; letter-spacing:0.4px;
+}
+
+/* ---- 章节背景渐变 ---- */
+.bg-ciee  { background:radial-gradient(ellipse at 25% 60%, rgba(244,63,110,0.18) 0%, transparent 55%),
+                     radial-gradient(ellipse at 70% 30%, rgba(251,176,66,0.10) 0%, transparent 50%); }
+.bg-movie { background:radial-gradient(ellipse at 60% 35%, rgba(253,163,186,0.20) 0%, transparent 55%),
+                     radial-gradient(ellipse at 30% 70%, rgba(190,18,56,0.12) 0%, transparent 50%); }
+.bg-disney{ background:radial-gradient(ellipse at 40% 30%, rgba(244,63,110,0.20) 0%, transparent 55%),
+                     radial-gradient(ellipse at 70% 60%, rgba(252,211,138,0.14) 0%, transparent 50%); }
+.bg-travel{ background:radial-gradient(ellipse at 50% 40%, rgba(253,163,186,0.15) 0%, transparent 55%),
+                     radial-gradient(ellipse at 20% 75%, rgba(190,18,56,0.10) 0%, transparent 50%); }
+.bg-daily { background:radial-gradient(ellipse at 35% 50%, rgba(251,113,152,0.16) 0%, transparent 55%),
+                     radial-gradient(ellipse at 70% 25%, rgba(251,176,66,0.10) 0%, transparent 50%); }
+.bg-grow  { background:radial-gradient(ellipse at 50% 50%, rgba(190,18,56,0.14) 0%, transparent 55%),
+                     radial-gradient(ellipse at 30% 20%, rgba(253,163,186,0.12) 0%, transparent 50%); }
+.bg-hero  { background:radial-gradient(ellipse at center, rgba(244,63,110,0.22) 0%, transparent 65%),
+                     radial-gradient(ellipse at 30% 40%, rgba(253,163,186,0.16) 0%, transparent 50%),
+                     radial-gradient(ellipse at 70% 55%, rgba(190,18,56,0.14) 0%, transparent 50%); }
+.bg-ending{ background:radial-gradient(ellipse at center, rgba(244,63,110,0.24) 0%, transparent 58%),
+                     radial-gradient(ellipse at 40% 45%, rgba(252,211,138,0.12) 0%, transparent 48%); }
+
+/* ============================================================
+   封面 Hero
+   ============================================================ */
+.hero-title {
+  font-size:clamp(46px,9vw,96px); font-weight:700; text-align:center;
+  background:linear-gradient(135deg,#fecdd9,#fb7198,#f43f6e,#e11d4a,#be1238);
+  background-size:300% 300%; -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent; animation:gradientShift 4.5s ease-in-out infinite;
+  line-height:1.25;
+}
+@keyframes gradientShift {
+  0%,100% { background-position:0% 50%; }
+  50% { background-position:100% 50%; }
+}
+.hero-sub {
+  font-size:clamp(15px,2.5vw,20px); color:rgba(255,255,255,0.65);
+  margin-top:20px; letter-spacing:6px; text-align:center;
+}
+.hero-hearts {
+  font-size:clamp(36px,8vw,72px); margin-bottom:28px;
+  animation:heroBeat 3.5s ease-in-out infinite;
+  filter:drop-shadow(0 0 36px rgba(244,63,110,0.55));
+}
+@keyframes heroBeat {
+  0%,100% { transform:scale(1); }
+  14% { transform:scale(1.12); }
+  28% { transform:scale(1); }
+  42% { transform:scale(1.08); }
+  56% { transform:scale(1); }
+}
+.hero-hearts span { display:inline-block; animation:hFloat 3s ease-in-out infinite; }
+.hero-hearts span:nth-child(2) { animation-delay:0.12s; }
+.hero-hearts span:nth-child(3) { animation-delay:0.24s; }
+@keyframes hFloat {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-10px); }
+}
+
+.scroll-hint {
+  position:absolute; bottom:36px; display:flex; flex-direction:column;
+  align-items:center; gap:6px;
+}
+.scroll-hint span { color:rgba(255,255,255,0.4); font-size:11px; letter-spacing:3px; }
+.scroll-arrow {
+  width:20px; height:20px;
+  border-right:2px solid rgba(255,255,255,0.4);
+  border-bottom:2px solid rgba(255,255,255,0.4);
+  transform:rotate(45deg);
+  animation:arrowBounce 1.6s ease-in-out infinite;
+}
+@keyframes arrowBounce {
+  0%,100% { transform:rotate(45deg) translateY(0); opacity:0.3; }
+  50% { transform:rotate(45deg) translateY(7px); opacity:1; }
+}
+
+/* ============================================================
+   SVG 场景插画区域
+   ============================================================ */
+.scene-illo {
+  display:flex; align-items:center; justify-content:center;
+  gap:16px; margin-bottom:30px; font-size:56px;
+  flex-wrap:wrap; text-align:center;
+}
+.scene-illo .fig {
+  transition:all 0.5s ease; cursor:default;
+}
+.scene-illo .fig:hover { transform:scale(1.2) rotate(-3deg); }
+.scene-illo .fig.float { animation:softFloat 3s ease-in-out infinite; }
+.scene-illo .fig.float-d1 { animation-delay:0.4s; }
+.scene-illo .fig.float-d2 { animation-delay:0.8s; }
+.scene-illo .fig.float-d3 { animation-delay:1.2s; }
+@keyframes softFloat {
+  0%,100% { transform:translateY(0); }
+  50% { transform:translateY(-8px); }
+}
+
+/* ============================================================
+   打字机效果
+   ============================================================ */
+.typewriter {
+  border-right:2px solid var(--rose-400);
+  animation:blinkCaret 0.75s step-end infinite;
+}
+.typewriter.done { border-right:none; animation:none; }
+@keyframes blinkCaret {
+  0%,100% { border-color:var(--rose-400); }
+  50% { border-color:transparent; }
+}
+
+/* ============================================================
+   足迹卡片网格
+   ============================================================ */
+.travel-grid {
+  display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+  gap:18px; margin-top:20px;
+}
+.travel-card {
+  background:var(--glass-bg); backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border); border-radius:18px;
+  padding:28px 20px; text-align:center;
+  transition:all var(--transition); cursor:default;
+}
+.travel-card:hover {
+  transform:translateY(-6px); box-shadow:var(--shadow-md);
+  border-color:rgba(255,255,255,0.55);
+}
+.travel-card .icon { font-size:40px; margin-bottom:10px; display:block; }
+.travel-card .label { color:rgba(255,255,255,0.85); font-size:14px; letter-spacing:1px; }
+.travel-card .sub  { color:rgba(255,255,255,0.5); font-size:11px; margin-top:4px; letter-spacing:2px; }
+
+/* ============================================================
+   日常生活双栏
+   ============================================================ */
+.dual-cards {
+  display:grid; grid-template-columns:1fr 1fr; gap:22px; margin-top:20px;
+}
+.dual-card {
+  background:var(--glass-bg); backdrop-filter:blur(12px);
+  border:1px solid var(--glass-border); border-radius:18px;
+  padding:30px 24px; text-align:center; transition:all var(--transition);
+}
+.dual-card:hover { transform:translateY(-4px); box-shadow:var(--shadow-md); }
+.dual-card .icon { font-size:38px; margin-bottom:8px; display:block; }
+.dual-card h4 { color:var(--rose-200); font-size:16px; margin-bottom:8px; letter-spacing:2px; }
+.dual-card p  { color:rgba(255,255,255,0.75); font-size:13px; line-height:1.8; }
+@media(max-width:560px) { .dual-cards { grid-template-columns:1fr; } }
+
+/* ============================================================
+   爱心增长计数器
+   ============================================================ */
+.love-meter {
+  text-align:center; margin:20px 0 30px;
+}
+.love-meter .number {
+  font-size:clamp(44px,8vw,72px); font-weight:700;
+  background:linear-gradient(135deg,#fecdd9,#fb7198,#f43f6e);
+  -webkit-background-clip:text; background-clip:text;
+  -webkit-text-fill-color:transparent;
+}
+.love-meter .label {
+  color:rgba(255,255,255,0.6); font-size:14px; letter-spacing:4px; margin-top:6px;
+}
+
+/* ============================================================
+   引用块
+   ============================================================ */
+.quote-block {
+  text-align:center; padding:20px 0;
+}
+.quote-block blockquote {
+  font-size:clamp(17px,2.8vw,22px); color:rgba(255,255,255,0.9);
+  font-style:italic; line-height:2.2; letter-spacing:1px;
+  border-left:3px solid var(--rose-400); padding-left:20px;
+  text-align:left; margin:0 auto; max-width:500px;
+}
+
+/* ============================================================
+   动画工具类
+   ============================================================ */
+.fade-up {
+  opacity:0; transform:translateY(35px);
+  transition:all 0.9s cubic-bezier(0.25,0.46,0.45,0.94);
+}
+.fade-up.show { opacity:1; transform:translateY(0); }
+.fade-up.d1 { transition-delay:0.1s; }
+.fade-up.d2 { transition-delay:0.2s; }
+.fade-up.d3 { transition-delay:0.3s; }
+.fade-up.d4 { transition-delay:0.4s; }
+
+/* ============================================================
+   点击飘出的爱心
+   ============================================================ */
+.pop-heart {
+  position:fixed; pointer-events:none; z-index:9999;
+  font-size:22px; animation:popUp 1.6s ease-out forwards;
+}
+@keyframes popUp {
+  0% { opacity:1; transform:translateY(0) scale(0.4) rotate(0deg); }
+  45% { opacity:1; transform:translateY(-70px) scale(1.25) rotate(12deg); }
+  100% { opacity:0; transform:translateY(-140px) scale(0.25) rotate(-25deg); }
+}
+
+/* ============================================================
+   结尾大爱心
+   ============================================================ */
+.ending-heart {
+  font-size:clamp(60px,12vw,100px);
+  animation:endingBeat 2.2s ease-in-out infinite;
+  filter:drop-shadow(0 0 50px rgba(244,63,110,0.7));
+  cursor:pointer; user-select:none;
+}
+@keyframes endingBeat {
+  0%,100% { transform:scale(1); }
+  12% { transform:scale(1.18); }
+  24% { transform:scale(1); }
+  36% { transform:scale(1.1); }
+  48% { transform:scale(1); }
+}
+
+/* ============================================================
+   响应式
+   ============================================================ */
+@media(max-width:768px) {
+  .glass { padding:28px 20px; }
+  section { padding:50px 14px; }
+  .travel-grid { grid-template-columns:repeat(2,1fr); gap:12px; }
+  .travel-card { padding:20px 14px; }
+  .travel-card .icon { font-size:30px; }
+}
+@media(max-width:400px) {
+  .travel-grid { grid-template-columns:1fr; }
+}
+
+</style>
+</head>
+<body>
+
+<canvas id="bgCanvas"></canvas>
+
+<!-- 音乐 -->
+<button class="music-toggle on" id="musicBtn" title="音乐开关">🎵</button>
+
+<!-- ========================= 封面 ========================= -->
+<section class="bg-hero" id="s0">
+  <div class="hero-hearts"><span>💕</span><span>💗</span><span>💖</span></div>
+  <h1 class="hero-title fade-up">小陈 ❤ 小吴</h1>
+  <p class="hero-sub fade-up d2">我们的爱情故事</p>
+  <p style="color:rgba(255,255,255,0.4);font-size:13px;letter-spacing:4px;margin-top:14px;" class="fade-up d3">
+    始于进博会 · 归于每一天
+  </p>
+  <div class="scroll-hint fade-up d4">
+    <span>向下探索</span>
+    <div class="scroll-arrow"></div>
+  </div>
+</section>
+
+<!-- ========================= 第一章：进博会初遇 ========================= -->
+<section class="bg-ciee" id="s1">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第一章</p>
+    <h2 class="section-title fade-up d1">🌏 进博会 · 初见</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="scene-illo fade-up d3">
+      <span class="fig float">🏛️</span>
+      <span class="fig float float-d1">✨</span>
+      <span class="fig float float-d2">👨‍💼</span>
+      <span class="fig float float-d3">👩‍💼</span>
+      <span class="fig">💫</span>
+    </div>
+
+    <div class="glass fade-up d4">
+      <p>
+        2025 年深秋，<span style="color:var(--rose-300);font-weight:bold;">上海进博会</span>的展馆里人潮涌动。
+        小陈穿梭在各国展台之间，一抬头，就看到了不远处正在认真参观的小吴。
+      </p>
+      <p style="margin-top:14px;">
+        她穿着一件浅色大衣，手里拿着一沓展会资料，<span class="typewriter" id="tw1"></span>
+      </p>
+      <p style="margin-top:14px;">
+        也许是缘分，两个人在同一个展台前驻足。小陈鼓起勇气搭了话，<span class="typewriter" id="tw2"></span>
+      </p>
+      <p style="margin-top:14px; color:var(--rose-300); text-align:center; font-weight:bold;">
+        <span class="typewriter" id="tw3"></span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 第二章：电影暧昧 ========================= -->
+<section class="bg-movie" id="s2">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第二章</p>
+    <h2 class="section-title fade-up d1">🎬 疯狂动物城 2 · 暧昧</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="scene-illo fade-up d3">
+      <span class="fig float">🎥</span>
+      <span class="fig float float-d1">🍿</span>
+      <span class="fig float float-d2">🦊</span>
+      <span class="fig float float-d3">🐰</span>
+      <span class="fig">💞</span>
+    </div>
+
+    <div class="glass fade-up d4">
+      <p>
+        进博会后，两个人一直保持着联系。某天小陈刷到 <span style="color:var(--gold-300);font-weight:bold;">《疯狂动物城2》</span>上映的消息，
+        想起小吴说过很喜欢第一部，便鼓起勇气约她一起去看。
+      </p>
+      <p style="margin-top:14px;">
+        影院暗下来的灯光里，尼克和朱迪在银幕上冒险，<span class="typewriter" id="tw4"></span>
+      </p>
+      <p style="margin-top:14px;">
+        散场后两个人走在夜色里，聊着电影里的笑点和感动。<span class="typewriter" id="tw5"></span>
+      </p>
+      <p style="margin-top:14px; color:var(--rose-300); text-align:center; font-weight:bold;">
+        <span class="typewriter" id="tw6"></span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 第三章：迪士尼定情 ========================= -->
+<section class="bg-disney" id="s3">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第三章</p>
+    <h2 class="section-title fade-up d1">🏰 迪士尼 · 定情</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="scene-illo fade-up d3">
+      <span class="fig float">🏰</span>
+      <span class="fig float float-d1">🎠</span>
+      <span class="fig float float-d2">🎢</span>
+      <span class="fig float float-d3">🚀</span>
+      <span class="fig">💝</span>
+    </div>
+
+    <div class="glass fade-up d4">
+      <p>
+        那个周末，两个人约好了一起去<span style="color:var(--rose-300);font-weight:bold;">上海迪士尼</span>。
+        虽然没赶上烟花表演，但一整天两个人刷遍了热门项目——
+        飞越地平线、创极速光轮、加勒比海盗、七个小矮人矿山车……
+        每一个项目都排了很久的队，但有彼此陪伴，等待也变得甜蜜。
+      </p>
+      <p style="margin-top:14px;">
+        从旋转木马上下来的时候，天色已经暗了。<span class="typewriter" id="tw7"></span>
+      </p>
+      <p style="margin-top:14px;">
+        小陈牵起小吴的手，在城堡的灯光下，说出了心里藏了好久的话。<span class="typewriter" id="tw8"></span>
+      </p>
+      <p style="margin-top:14px; color:var(--rose-300); text-align:center; font-weight:bold; font-size:18px;">
+        <span class="typewriter" id="tw9"></span>
+      </p>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 第四章：山海足迹 ========================= -->
+<section class="bg-travel" id="s4">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第四章</p>
+    <h2 class="section-title fade-up d1">🗺️ 山海 · 足迹</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="glass fade-up d3" style="margin-bottom:24px;">
+      <p style="text-align:center;">
+        在一起之后，两个人决定<b>走遍彼此的过去，也走向共同的未来</b>。
+        每一个地方，都是一段藏在时光里的故事。
+      </p>
+    </div>
+
+    <div class="travel-grid">
+      <div class="travel-card fade-up d1">
+        <span class="icon">🏫</span>
+        <span class="label">小吴的高中</span>
+        <span class="sub">花开的路口</span>
+      </div>
+      <div class="travel-card fade-up d2">
+        <span class="icon">🎓</span>
+        <span class="label">小吴的大学</span>
+        <span class="sub">青春的主场</span>
+      </div>
+      <div class="travel-card fade-up d3">
+        <span class="icon">🎓</span>
+        <span class="label">小陈的大学</span>
+        <span class="sub">成长的岁月</span>
+      </div>
+      <div class="travel-card fade-up d1">
+        <span class="icon">🏫</span>
+        <span class="label">小陈的初中</span>
+        <span class="sub">年少的印记</span>
+      </div>
+      <div class="travel-card fade-up d2">
+        <span class="icon">🎒</span>
+        <span class="label">小陈的小学</span>
+        <span class="sub">最初的起点</span>
+      </div>
+      <div class="travel-card fade-up d3">
+        <span class="icon">⛰️</span>
+        <span class="label">金山区</span>
+        <span class="sub">携手同游</span>
+      </div>
+      <div class="travel-card fade-up d1">
+        <span class="icon">🌊</span>
+        <span class="label">海边漫步</span>
+        <span class="sub">浪花与晚风</span>
+      </div>
+      <div class="travel-card fade-up d2">
+        <span class="icon">🌃</span>
+        <span class="label">城市角落</span>
+        <span class="sub">数不清的约会</span>
+      </div>
+    </div>
+
+    <p style="text-align:center;color:rgba(255,255,255,0.5);font-size:13px;margin-top:22px;letter-spacing:3px;" class="fade-up d4">
+      ……还有很多很多地方，余生慢慢走
+    </p>
+  </div>
+</section>
+
+<!-- ========================= 第五章：烟火日常 ========================= -->
+<section class="bg-daily" id="s5">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第五章</p>
+    <h2 class="section-title fade-up d1">🍜 烟火 · 日常</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="dual-cards fade-up d3">
+      <div class="dual-card">
+        <span class="icon">🎮</span>
+        <h4>游戏搭子</h4>
+        <p>一起通关了无数游戏<br>从双人成行到分手厨房<br>笑过也"吵"过<br>但每一局都很快乐</p>
+      </div>
+      <div class="dual-card">
+        <span class="icon">🍲</span>
+        <h4>美食搭档</h4>
+        <p>从街边小摊到精致餐厅<br>火锅、烧烤、日料、甜品<br>小吴爱吃，小陈爱看她吃<br>幸福就是这么简单</p>
+      </div>
+    </div>
+
+    <div class="love-meter fade-up d4">
+      <span class="number" id="daysCount">...</span>
+      <span class="label">天 · 每一天都闪闪发光</span>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 第六章：磨合与爱 ========================= -->
+<section class="bg-grow" id="s6">
+  <div class="section-inner">
+    <p class="chapter-num fade-up">第六章</p>
+    <h2 class="section-title fade-up d1">💪 磨合 · 更爱</h2>
+    <div class="title-ornament fade-up d2"></div>
+
+    <div class="glass fade-up d3">
+      <p>
+        当然，两个人不是没有吵过架。有时候因为一句话、一件小事，
+        也会闹别扭、生闷气。但每一次争吵过后，总有人先低头，
+        总有人先递出那杯热奶茶。
+      </p>
+      <p style="margin-top:14px;">
+        因为两个人都知道——<span style="color:var(--rose-300);font-weight:bold;">吵架不是为了赢，而是为了更懂对方。</span>
+      </p>
+      <p style="margin-top:14px;">
+        每一次和好，都像是重新爱上一次。矛盾没有把他们推远，
+        反而让两颗心靠得更近了。
+      </p>
+    </div>
+
+    <div class="quote-block fade-up d4">
+      <blockquote>
+        "爱不是从不争吵<br>
+        而是争吵之后<br>
+        依然选择紧紧拥抱"
+      </blockquote>
+    </div>
+  </div>
+</section>
+
+<!-- ========================= 结尾 ========================= -->
+<section class="bg-ending" id="s7">
+  <div class="ending-heart fade-up" id="endingHeart">💝</div>
+  <h2 class="section-title fade-up d2" style="margin-top:20px;">小陈 ❤ 小吴</h2>
+  <p style="color:rgba(255,255,255,0.55);font-size:15px;letter-spacing:5px;margin-top:10px;" class="fade-up d3">
+    故事未完 · 余生继续
+  </p>
+  <p style="color:rgba(255,255,255,0.35);font-size:12px;letter-spacing:3px;margin-top:28px;" class="fade-up d4">
+    ✨ 点击屏幕任意位置 · 有惊喜 ✨
+  </p>
+</section>
+
+<!-- ============================================================
+     脚本
+     ============================================================ -->
+<script>
+(function(){
+  // ==================== 粒子画布 ====================
+  const canvas = document.getElementById('bgCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H, particles = [];
+
+  function resize() {
+    W = canvas.width  = window.innerWidth;
+    H = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  class Particle {
+    constructor() {
+      this.reset();
+      this.y = Math.random() * H;
+    }
+    reset() {
+      this.x = Math.random() * W;
+      this.y = -18;
+      this.r = Math.random() * 2.6 + 0.8;
+      this.vy = Math.random() * 0.7 + 0.25;
+      this.vx = Math.random() * 0.35 - 0.175;
+      this.alpha = Math.random() * 0.55 + 0.18;
+      this.isH = Math.random() < 0.09;
+      this.hue = Math.random() < 0.55 ? (Math.random() * 28 + 342) : (Math.random() * 18 + 28);
+    }
+    update() {
+      this.y += this.vy;
+      this.x += this.vx + Math.sin(this.y * 0.012) * 0.25;
+      this.alpha -= 0.00025;
+      if (this.y > H + 22 || this.alpha <= 0) this.reset();
+    }
+    draw() {
+      ctx.save();
+      ctx.globalAlpha = this.alpha;
+      ctx.fillStyle = `hsl(${this.hue}, 68%, 74%)`;
+      ctx.shadowColor = `hsl(${this.hue}, 68%, 62%)`;
+      ctx.shadowBlur = this.isH ? 7 : 2.5;
+      if (this.isH) {
+        const s = this.r * 2.4;
+        ctx.translate(this.x, this.y);
+        ctx.scale(s/24, s/24);
+        ctx.beginPath();
+        ctx.moveTo(12,21); ctx.bezierCurveTo(12,21,2,14,0,8);
+        ctx.bezierCurveTo(-2,3,-1,0,4,0); ctx.bezierCurveTo(8,0,11,3,12,7);
+        ctx.bezierCurveTo(13,3,16,0,20,0); ctx.bezierCurveTo(25,0,26,3,24,8);
+        ctx.bezierCurveTo(22,14,12,21,12,21);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.r, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+  }
+
+  for (let i=0; i<100; i++) particles.push(new Particle());
+
+  function animate() {
+    ctx.clearRect(0,0,W,H);
+    particles.forEach(p => { p.update(); p.draw(); });
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  // ==================== 滚动淡入 ====================
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+  }, { threshold: 0.18 });
+  document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+  // ==================== 打字机 ====================
+  const typeList = [
+    { id:'tw1', text:'她转过头时，小陈觉得自己心跳漏了一拍。',    delay:700  },
+    { id:'tw2', text:'没想到两个人聊得格外投缘，一聊就是一个下午。', delay:2400 },
+    { id:'tw3', text:'那一天，命运的齿轮开始转动。',                delay:4400 },
+    { id:'tw4', text:'而小陈偷偷看的，却是身边这个比电影还动人的人。', delay:900  },
+    { id:'tw5', text:'空气里弥漫着爆米花的甜香，还有一种说不清的暧昧。', delay:2800 },
+    { id:'tw6', text:'暧昧是爱情最美的前奏。',                     delay:4800 },
+    { id:'tw7', text:'小吴笑得像个孩子，小陈觉得那比任何风景都好看。',     delay:900  },
+    { id:'tw8', text:'"小吴，和我在一起好吗？"',                          delay:2800 },
+    { id:'tw9', text:'小吴红着脸点了点头。2025年12月29日，两个人正式在一起了。', delay:4000 },
+  ];
+
+  typeList.forEach(({id,text,delay}) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      let i = 0;
+      const t = setInterval(() => {
+        if (i < text.length) { el.textContent += text[i]; i++; }
+        else { clearInterval(t); el.classList.add('done'); }
+      }, 72);
+    }, delay);
+  });
+
+  // ==================== 天数计数器 ====================
+  const startDate = new Date('2025-12-29');
+  function updateDays() {
+    const el = document.getElementById('daysCount');
+    if (!el) return;
+    const diff = Math.floor((Date.now() - startDate.getTime()) / 86400000);
+    el.textContent = diff;
+  }
+  updateDays();
+
+  // ==================== 点击爱心 ====================
+  document.addEventListener('click', e => {
+    const h = document.createElement('div');
+    h.className = 'pop-heart';
+    const emojis = ['💕','💗','💖','💝','💘','🌸','✨','🌹','🩷','💐','🦋','🌟'];
+    h.textContent = emojis[~~(Math.random()*emojis.length)];
+    h.style.left = e.clientX + 'px';
+    h.style.top  = e.clientY + 'px';
+    h.style.fontSize = (Math.random()*18+16)+'px';
+    document.body.appendChild(h);
+    setTimeout(() => h.remove(), 1600);
+  });
+
+  // ==================== 结尾爱心点击彩蛋 ====================
+  const endingHeart = document.getElementById('endingHeart');
+  if (endingHeart) {
+    endingHeart.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // 爱心爆发
+      for (let i=0; i<20; i++) {
+        setTimeout(() => {
+          const h = document.createElement('div');
+          h.className = 'pop-heart';
+          h.textContent = ['💕','💗','💖','💝','💘','✨','💐'][~~(Math.random()*7)];
+          h.style.left = (endingHeart.getBoundingClientRect().left + Math.random()*80-40) + 'px';
+          h.style.top  = (endingHeart.getBoundingClientRect().top + Math.random()*60-30) + 'px';
+          h.style.fontSize = (Math.random()*28+20)+'px';
+          document.body.appendChild(h);
+          setTimeout(() => h.remove(), 1800);
+        }, i*40);
+      }
+    });
+  }
+
+  // ==================== BGM - Web Audio API 浪漫钢琴旋律 ====================
+  let audioCtx = null;
+  let musicOn = true;
+  let noteTimer = null;
+
+  function playTone(ctx, freq, t, dur, vol=0.055) {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0, t);
+    gain.gain.linearRampToValueAtTime(vol, t+0.08);
+    gain.gain.exponentialRampToValueAtTime(0.0008, t+dur);
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(t); osc.stop(t+dur);
+  }
+
+  // 卡农风格和弦进行 + 简单旋律
+  const melodyNotes = [
+    523,659,784, 523,659,784, 587,698,784, 587,698,784,
+    659,784,880, 659,784,880, 523,659,784, 523,659,784,
+    587,698,784, 587,698,880, 523,659,784, 698,659,523,
+    659,784,880,1047, 784,880,1047, 698,784,880,1047, 784,
+  ];
+  const bassNotes = [
+    262,262, 294,294, 330,330, 262,262,
+    294,294, 262,262, 330,330, 294,262,
+  ];
+
+  let ni=0, bi=0;
+  function startMelody() {
+    if (!audioCtx) audioCtx = new (window.AudioContext||window.webkitAudioContext)();
+    const bpm = 66;
+    const beat = 60 / bpm;
+    noteTimer = setInterval(() => {
+      if (!musicOn || audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+      // 旋律
+      playTone(audioCtx, melodyNotes[ni % melodyNotes.length], t, beat*1.6, 0.048);
+      // 低音
+      playTone(audioCtx, bassNotes[bi % bassNotes.length]*0.5, t, beat*2.2, 0.022);
+      // 偶尔点缀高音
+      if (ni % 4 === 0) {
+        playTone(audioCtx, melodyNotes[ni % melodyNotes.length]*2, t+0.05, beat*0.8, 0.02);
+      }
+      ni++; bi++;
+      if (ni % melodyNotes.length === 0) { ni=0; bi=0; }
+    }, beat * 1000);
+  }
+
+  // 用户首次交互激活音频
+  document.addEventListener('click', function initAudio() {
+    if (!audioCtx) startMelody();
+    if (audioCtx?.state === 'suspended') audioCtx.resume();
+  }, { once:true });
+
+  startMelody();
+
+  // 音乐按钮
+  const musicBtn = document.getElementById('musicBtn');
+  musicBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    musicOn = !musicOn;
+    if (musicOn) {
+      musicBtn.classList.add('on');
+      musicBtn.textContent = '🎵';
+      audioCtx?.resume();
+    } else {
+      musicBtn.classList.remove('on');
+      musicBtn.textContent = '🔇';
+    }
+  });
+
+})();
+</script>
+</body>
+</html>
